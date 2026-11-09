@@ -1,0 +1,1402 @@
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frise Chronologique de l'Art</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .timeline-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            margin: 15px 0 0 0;
+            font-size: 1.3rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-wrapper {
+            padding: 50px 30px;
+            position: relative;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, #e74c3c, #f39c12, #f1c40f, #2ecc71, #3498db, #9b59b6, #e91e63);
+            transform: translateX(-50%);
+            border-radius: 3px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 50px 0;
+            opacity: 0;
+            animation: slideIn 0.8s ease forwards;
+        }
+
+        .timeline-item:nth-child(odd) {
+            animation-delay: 0.2s;
+        }
+
+        .timeline-item:nth-child(even) {
+            animation-delay: 0.4s;
+        }
+
+        .timeline-content {
+            width: 42%;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: 4px solid transparent;
+            position: relative;
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .timeline-content:hover::before {
+            opacity: 1;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 0;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 58%;
+        }
+
+        .prehistoric { border-color: #8B4513; }
+        .ancient { border-color: #DAA520; }
+        .medieval { border-color: #4682B4; }
+        .renaissance { border-color: #DC143C; }
+        .baroque { border-color: #9932CC; }
+        .neoclassical { border-color: #2E8B57; }
+        .romantic { border-color: #FF6347; }
+        .impressionist { border-color: #FFD700; }
+        .modern { border-color: #FF1493; }
+        .realism { border-color: #8B4513; }
+        .abstract { border-color: #FF4500; }
+        .cubism { border-color: #32CD32; }
+        .surrealism { border-color: #FF69B4; }
+        .pop-art { border-color: #FF0000; }
+        .contemporary { border-color: #00CED1; }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 40px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 5px solid;
+            transform: translateX(-50%);
+            z-index: 10;
+            transition: all 0.4s ease;
+        }
+
+        .timeline-item:hover .timeline-dot {
+            transform: translateX(-50%) scale(1.4);
+            box-shadow: 0 0 25px rgba(0,0,0,0.3);
+        }
+
+        .period-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .prehistoric-badge { background: linear-gradient(135deg, #8B4513, #A0522D); }
+        .ancient-badge { background: linear-gradient(135deg, #DAA520, #FFD700); }
+        .medieval-badge { background: linear-gradient(135deg, #4682B4, #5F9EA0); }
+        .renaissance-badge { background: linear-gradient(135deg, #DC143C, #FF6347); }
+        .baroque-badge { background: linear-gradient(135deg, #9932CC, #BA55D3); }
+        .neoclassical-badge { background: linear-gradient(135deg, #2E8B57, #3CB371); }
+        .romantic-badge { background: linear-gradient(135deg, #FF6347, #FF7F50); }
+        .impressionist-badge { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .modern-badge { background: linear-gradient(135deg, #FF1493, #FF69B4); }
+        .realism-badge { background: linear-gradient(135deg, #8B4513, #A0522D); }
+        .abstract-badge { background: linear-gradient(135deg, #FF4500, #FF6347); }
+        .cubism-badge { background: linear-gradient(135deg, #32CD32, #90EE90); }
+        .surrealism-badge { background: linear-gradient(135deg, #FF69B4, #FFB6C1); }
+        .pop-art-badge { background: linear-gradient(135deg, #FF0000, #FF4500); }
+        .contemporary-badge { background: linear-gradient(135deg, #00CED1, #48D1CC); }
+
+        .art-date {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .art-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+
+        .art-description {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 18px;
+        }
+
+        .expand-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .expand-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .detailed-info {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease;
+            margin-top: 20px;
+        }
+
+        .detailed-info.expanded {
+            max-height: 400px;
+        }
+
+        .detailed-content {
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .artwork-example {
+            font-style: italic;
+            color: #6c757d;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+        }
+
+        .art-illustration {
+            width: 100%;
+            height: 120px;
+            margin: 15px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .art-illustration:hover {
+            transform: scale(1.05);
+        }
+
+        .art-illustration svg {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* Styles pour le pop-up */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 90vh;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: popupAppear 0.3s ease;
+        }
+
+        .popup-image {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .popup-close:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        .popup-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        @keyframes popupAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 40px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 100px);
+                margin-left: 80px !important;
+            }
+
+            .timeline-dot {
+                left: 40px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .legend {
+                grid-template-columns: 1fr;
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+
+
+    <div class="timeline-container">
+        <div class="header">
+            <h1>🎨 Histoire de l'Art</h1>
+            <p>De la Préhistoire à l'Art Contemporain - Un voyage à travers les siècles</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B4513;"></div>
+                <span>Préhistoire</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #DAA520;"></div>
+                <span>Antiquité</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4682B4;"></div>
+                <span>Art Médiéval</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #DC143C;"></div>
+                <span>Renaissance</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #9932CC;"></div>
+                <span>Baroque</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2E8B57;"></div>
+                <span>Néoclassique</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF6347;"></div>
+                <span>Romantisme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFD700;"></div>
+                <span>Impressionnisme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B4513;"></div>
+                <span>Réalisme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF4500;"></div>
+                <span>Art Abstrait</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #32CD32;"></div>
+                <span>Cubisme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF69B4;"></div>
+                <span>Surréalisme</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF0000;"></div>
+                <span>Pop Art</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00CED1;"></div>
+                <span>Art Contemporain</span>
+            </div>
+        </div>
+
+        <div class="timeline-wrapper">
+            <div class="timeline-line"></div>
+
+            <div class="timeline-item prehistoric">
+                <div class="timeline-dot" style="border-color: #8B4513;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge prehistoric-badge">Préhistoire</span>
+                    <div class="art-date">🗿 40 000 - 3 000 av. J.-C.</div>
+                    <div class="art-title">Art Pariétal et Sculptures</div>
+                    <div class="art-description">
+                        Les premières expressions artistiques humaines : peintures rupestres, sculptures et gravures.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="caveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#A0522D;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#caveGrad)"></rect>
+                            <!-- Bison préhistorique -->
+                            <path d="M50 60 Q70 45 90 50 Q110 55 120 70 Q115 85 100 90 Q80 95 60 85 Q45 75 50 60" fill="#654321" opacity="0.8"></path>
+                            <circle cx="85" cy="65" r="2" fill="#2F1B14"></circle>
+                            <path d="M120 70 L130 65 L125 75 Z" fill="#654321"></path>
+                            <!-- Mains -->
+                            <g transform="translate(180,30)">
+                                <path d="M0 20 Q5 15 10 20 Q15 15 20 20 Q25 15 30 20 Q35 15 40 20 Q40 25 35 30 Q30 35 25 30 Q20 35 15 30 Q10 35 5 30 Q0 35 0 20" fill="#D2691E" opacity="0.7"></path>
+                            </g>
+                            <!-- Chevaux stylisés -->
+                            <path d="M220 50 Q240 40 260 45 Q270 50 275 65 Q270 80 250 85 Q230 80 220 65 Q215 55 220 50" fill="#8B4513" opacity="0.6"></path>
+                            <path d="M275 65 L285 60 L280 70 Z" fill="#8B4513"></path>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Caractéristiques :</strong> Art naturaliste représentant principalement des animaux (bisons, chevaux, mammouths) et des mains humaines. Utilisation d'ocres naturelles et de charbon.
+                            <br><br>
+                            <strong>Techniques :</strong> Peinture au doigt, soufflage de pigments, gravure sur pierre et os.
+                            <div class="artwork-example">
+                                <strong>Œuvres emblématiques :</strong> Grottes de Lascaux (France), Altamira (Espagne), Vénus de Willendorf
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item ancient">
+                <div class="timeline-dot" style="border-color: #DAA520;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge ancient-badge">Antiquité</span>
+                    <div class="art-date">🏛️ 3 000 av. J.-C. - 500 apr. J.-C.</div>
+                    <div class="art-title">Art Égyptien, Grec et Romain</div>
+                    <div class="art-description">
+                        Développement de l'architecture monumentale, sculpture idéalisée et peintures narratives.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="templeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#DAA520;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#templeGrad)"></rect>
+                            <!-- Temple grec -->
+                            <rect x="50" y="80" width="200" height="30" fill="#F5DEB3"></rect>
+                            <!-- Colonnes -->
+                            <rect x="70" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="90" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="110" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="130" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="150" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="170" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="190" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <rect x="210" y="40" width="8" height="40" fill="#DDBF94"></rect>
+                            <!-- Fronton -->
+                            <polygon points="60,40 150,20 240,40" fill="#CD853F"></polygon>
+                            <!-- Pyramide -->
+                            <polygon points="20,110 40,30 60,110" fill="#DEB887"></polygon>
+                            <polygon points="40,30 60,110 80,110 60,30" fill="#D2B48C"></polygon>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Égypte :</strong> Art funéraire, hiéroglyphes, représentation frontale et profil. Pyramides et temples grandioses.
+                            <br><br>
+                            <strong>Grèce :</strong> Recherche de la beauté idéale, proportions parfaites, naissance de la perspective.
+                            <div class="artwork-example">
+                                <strong>Œuvres emblématiques :</strong> Pyramides de Gizeh, Parthénon, Vénus de Milo, Colisée
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item medieval">
+                <div class="timeline-dot" style="border-color: #4682B4;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge medieval-badge">Art Médiéval</span>
+                    <div class="art-date">⛪ 500 - 1400</div>
+                    <div class="art-title">Art Roman et Gothique</div>
+                    <div class="art-description">
+                        Art religieux dominant, cathédrales majestueuses et enluminures précieuses.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="gothicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#4682B4;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#5F9EA0;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#gothicGrad)"></rect>
+                            <!-- Cathédrale gothique -->
+                            <rect x="120" y="60" width="60" height="50" fill="#708090"></rect>
+                            <!-- Tours -->
+                            <rect x="100" y="30" width="20" height="80" fill="#696969"></rect>
+                            <rect x="180" y="30" width="20" height="80" fill="#696969"></rect>
+                            <!-- Flèches -->
+                            <polygon points="110,30 110,10 110,30" fill="#2F4F4F"></polygon>
+                            <polygon points="190,30 190,10 190,30" fill="#2F4F4F"></polygon>
+                            <!-- Rosace -->
+                            <circle cx="150" cy="75" r="12" fill="#FF6347" opacity="0.8"></circle>
+                            <circle cx="150" cy="75" r="8" fill="#FFD700" opacity="0.6"></circle>
+                            <!-- Vitraux -->
+                            <rect x="130" y="85" width="8" height="20" fill="#0000FF" opacity="0.7"></rect>
+                            <rect x="145" y="85" width="8" height="20" fill="#FF0000" opacity="0.7"></rect>
+                            <rect x="160" y="85" width="8" height="20" fill="#00FF00" opacity="0.7"></rect>
+                            <!-- Manuscrit enluminé -->
+                            <rect x="20" y="40" width="60" height="40" fill="#F5DEB3"></rect>
+                            <rect x="25" y="45" width="50" height="30" fill="#FFFAF0"></rect>
+                            <text x="30" y="55" font-family="serif" font-size="6" fill="#8B4513">Manuscrit</text>
+                            <circle cx="70" cy="65" r="8" fill="#DAA520"></circle>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Art Roman :</strong> Architecture massive, sculptures narratives, fresques murales. Symbolisme religieux omniprésent.
+                            <br><br>
+                            <strong>Art Gothique :</strong> Élévation vers le ciel, vitraux colorés, voûtes sur croisées d'ogives.
+                            <div class="artwork-example">
+                                <strong>Œuvres emblématiques :</strong> Notre-Dame de Paris, Sainte-Chapelle, Livre de Kells, Tapisserie de Bayeux
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item renaissance">
+                <div class="timeline-dot" style="border-color: #DC143C;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge renaissance-badge">Renaissance</span>
+                    <div class="art-date">🎭 1400 - 1600</div>
+                    <div class="art-title">Humanisme et Perspective</div>
+                    <div class="art-description">
+                        Retour aux sources antiques, maîtrise de la perspective et célébration de l'homme.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="renaissanceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#DC143C;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#renaissanceGrad)"></rect>
+                            <!-- Portrait de la Joconde stylisé -->
+                            <rect x="50" y="20" width="60" height="80" fill="#F5DEB3"></rect>
+                            <ellipse cx="80" cy="45" rx="20" ry="25" fill="#FDBCB4"></ellipse>
+                            <circle cx="75" cy="40" r="2" fill="#000"></circle>
+                            <circle cx="85" cy="40" r="2" fill="#000"></circle>
+                            <path d="M75 50 Q80 55 85 50" stroke="#8B4513" stroke-width="1" fill="none"></path>
+                            <path d="M70 35 Q80 30 90 35" stroke="#654321" stroke-width="2" fill="none"></path>
+                            <!-- Perspective architecturale -->
+                            <polygon points="150,100 200,60 250,60 200,100" fill="#DEB887"></polygon>
+                            <polygon points="200,60 250,60 280,40 230,40" fill="#D2B48C"></polygon>
+                            <polygon points="250,60 280,40 280,80 250,100" fill="#CD853F"></polygon>
+                            <!-- Lignes de perspective -->
+                            <line x1="150" y1="100" x2="280" y2="40" stroke="#8B4513" stroke-width="1" opacity="0.5"></line>
+                            <line x1="200" y1="100" x2="280" y2="60" stroke="#8B4513" stroke-width="1" opacity="0.5"></line>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Innovations :</strong> Perspective linéaire, sfumato, clair-obscur. L'artiste devient un intellectuel respecté.
+                            <br><br>
+                            <strong>Thèmes :</strong> Mythologie, portraits, scènes religieuses humanisées, architecture harmonieuse.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Léonard de Vinci (Joconde), Michel-Ange (Chapelle Sixtine), Raphaël (École d'Athènes)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item baroque">
+                <div class="timeline-dot" style="border-color: #9932CC;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge baroque-badge">Baroque</span>
+                    <div class="art-date">💫 1600 - 1750</div>
+                    <div class="art-title">Théâtralité et Mouvement</div>
+                    <div class="art-description">
+                        Art dramatique et émotionnel, jeux de lumière spectaculaires et compositions dynamiques.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="baroqueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#9932CC;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#BA55D3;stop-opacity:1"></stop>
+                                </linearGradient>
+                                <radialGradient id="lightEffect" cx="30%" cy="30%" r="70%">
+                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.8"></stop>
+                                    <stop offset="100%" style="stop-color:#8B4513;stop-opacity:0.3"></stop>
+                                </radialGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#baroqueGrad)"></rect>
+                            <!-- Scène dramatique avec clair-obscur -->
+                            <ellipse cx="80" cy="60" rx="60" ry="50" fill="url(#lightEffect)"></ellipse>
+                            <!-- Personnage en mouvement -->
+                            <ellipse cx="70" cy="45" rx="15" ry="20" fill="#FDBCB4"></ellipse>
+                            <circle cx="65" cy="35" r="2" fill="#000"></circle>
+                            <circle cx="75" cy="35" r="2" fill="#000"></circle>
+                            <path d="M60 40 Q70 45 80 40" stroke="#654321" stroke-width="2" fill="none"></path>
+                            <!-- Draperie mouvementée -->
+                            <path d="M50 65 Q80 70 110 65 Q120 80 100 90 Q70 95 40 85 Q30 70 50 65" fill="#DC143C" opacity="0.8"></path>
+                            <path d="M60 75 Q90 80 120 75 Q130 90 110 100 Q80 105 50 95 Q40 80 60 75" fill="#8B0000" opacity="0.6"></path>
+                            <!-- Architecture baroque ornementée -->
+                            <rect x="180" y="30" width="80" height="70" fill="#DEB887"></rect>
+                            <!-- Colonnes torsadées -->
+                            <path d="M190 30 Q195 50 190 70 Q185 90 190 100" stroke="#8B4513" stroke-width="4" fill="none"></path>
+                            <path d="M210 30 Q215 50 210 70 Q205 90 210 100" stroke="#8B4513" stroke-width="4" fill="none"></path>
+                            <path d="M230 30 Q235 50 230 70 Q225 90 230 100" stroke="#8B4513" stroke-width="4" fill="none"></path>
+                            <path d="M250 30 Q255 50 250 70 Q245 90 250 100" stroke="#8B4513" stroke-width="4" fill="none"></path>
+                            <!-- Ornements dorés -->
+                            <circle cx="200" cy="50" r="5" fill="#FFD700"></circle>
+                            <circle cx="220" cy="45" r="4" fill="#FFD700"></circle>
+                            <circle cx="240" cy="55" r="5" fill="#FFD700"></circle>
+                            <!-- Angelots -->
+                            <circle cx="270" cy="40" r="8" fill="#FDBCB4"></circle>
+                            <ellipse cx="270" cy="50" rx="6" ry="4" fill="#F0E68C"></ellipse>
+                            <path d="M265 45 Q270 40 275 45" stroke="#FFD700" stroke-width="1" fill="none"></path>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Caractéristiques :</strong> Contrastes violents, mouvement perpétuel, trompe-l'œil, dorures abondantes.
+                            <br><br>
+                            <strong>Objectif :</strong> Émouvoir et impressionner le spectateur, servir la Contre-Réforme catholique.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Caravage (Judith décapitant Holopherne), Bernin (Extase de sainte Thérèse), Rubens
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item neoclassical">
+                <div class="timeline-dot" style="border-color: #2E8B57;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge neoclassical-badge">Néoclassique</span>
+                    <div class="art-date">🏺 1750 - 1850</div>
+                    <div class="art-title">Retour à l'Antique</div>
+                    <div class="art-description">
+                        Réaction au Baroque, recherche de simplicité, noblesse et grandeur morale.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="neoclassicalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#2E8B57;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#3CB371;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#neoclassicalGrad)"></rect>
+                            <!-- Temple grec idéalisé -->
+                            <rect x="50" y="70" width="120" height="30" fill="#F5F5DC"></rect>
+                            <!-- Colonnes doriques parfaites -->
+                            <rect x="60" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="75" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="90" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="105" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="120" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="135" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <rect x="150" y="40" width="8" height="30" fill="#DDBF94"></rect>
+                            <!-- Fronton triangulaire -->
+                            <polygon points="50,40 110,20 170,40" fill="#CD853F"></polygon>
+                            <!-- Scène héroïque dans le fronton -->
+                            <ellipse cx="110" cy="30" rx="8" ry="10" fill="#FDBCB4"></ellipse>
+                            <rect x="105" y="35" width="10" height="8" fill="#FF6347"></rect>
+                            <!-- Statue grecque -->
+                            <ellipse cx="220" cy="50" rx="12" ry="18" fill="#F5F5DC"></ellipse>
+                            <circle cx="220" cy="40" r="6" fill="#F5F5DC"></circle>
+                            <rect x="215" y="55" width="10" height="15" fill="#F5F5DC"></rect>
+                            <rect x="212" y="70" width="6" height="12" fill="#F5F5DC"></rect>
+                            <rect x="222" y="70" width="6" height="12" fill="#F5F5DC"></rect>
+                            <!-- Bras levé héroïque -->
+                            <rect x="210" y="45" width="8" height="3" fill="#F5F5DC" transform="rotate(-30 214 46)"></rect>
+                            <rect x="230" y="48" width="8" height="3" fill="#F5F5DC" transform="rotate(45 234 49)"></rect>
+                            <!-- Drapé classique -->
+                            <path d="M210 60 Q220 65 230 60 Q235 70 225 75 Q215 80 205 75 Q200 65 210 60" fill="#4682B4" opacity="0.7"></path>
+                            <!-- Vase grec -->
+                            <ellipse cx="260" cy="85" rx="8" ry="15" fill="#8B4513"></ellipse>
+                            <ellipse cx="260" cy="75" rx="10" ry="5" fill="#A0522D"></ellipse>
+                            <rect x="255" y="70" width="10" height="3" fill="#8B4513"></rect>
+                            <!-- Motifs géométriques -->
+                            <rect x="250" y="78" width="20" height="2" fill="#DAA520"></rect>
+                            <rect x="252" y="82" width="16" height="2" fill="#DAA520"></rect>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Principes :</strong> Lignes pures, compositions équilibrées, sujets héroïques et moralisateurs.
+                            <br><br>
+                            <strong>Contexte :</strong> Révolution française, Empire napoléonien, redécouverte de Pompéi et Herculanum.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Jacques-Louis David (Le Serment du Jeu de Paume), Ingres (La Grande Odalisque)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item romantic">
+                <div class="timeline-dot" style="border-color: #FF6347;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge romantic-badge">Romantisme</span>
+                    <div class="art-date">🌙 1800 - 1850</div>
+                    <div class="art-title">Émotion et Individualité</div>
+                    <div class="art-description">
+                        Primauté du sentiment sur la raison, goût pour l'exotisme et le sublime.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="romanticGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FF6347;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FF7F50;stop-opacity:1"></stop>
+                                </linearGradient>
+                                <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FFB6C1;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FFA07A;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#romanticGrad)"></rect>
+                            <!-- Ciel dramatique -->
+                            <rect x="0" y="0" width="300" height="60" fill="url(#skyGrad)"></rect>
+                            <!-- Nuages tourmentés -->
+                            <ellipse cx="50" cy="25" rx="25" ry="12" fill="#696969" opacity="0.7"></ellipse>
+                            <ellipse cx="120" cy="20" rx="30" ry="15" fill="#2F4F4F" opacity="0.8"></ellipse>
+                            <ellipse cx="200" cy="30" rx="35" ry="18" fill="#708090" opacity="0.6"></ellipse>
+                            <ellipse cx="270" cy="25" rx="20" ry="10" fill="#696969" opacity="0.7"></ellipse>
+                            <!-- Montagne sublime -->
+                            <polygon points="180,60 220,20 260,60" fill="#8B4513"></polygon>
+                            <polygon points="220,20 260,60 280,55 240,15" fill="#A0522D"></polygon>
+                            <!-- Neige sur les sommets -->
+                            <polygon points="220,20 235,30 225,35 215,25" fill="#FFFAFA"></polygon>
+                            <polygon points="240,15 255,25 245,30 235,20" fill="#FFFAFA"></polygon>
+                            <!-- Personnage romantique contemplant -->
+                            <ellipse cx="80" cy="75" rx="8" ry="12" fill="#2F4F4F"></ellipse>
+                            <circle cx="80" cy="65" r="4" fill="#FDBCB4"></circle>
+                            <rect x="75" y="80" width="10" height="15" fill="#8B4513"></rect>
+                            <rect x="72" y="95" width="6" height="8" fill="#654321"></rect>
+                            <rect x="82" y="95" width="6" height="8" fill="#654321"></rect>
+                            <!-- Cape flottante -->
+                            <path d="M70 75 Q85 80 90 85 Q95 95 85 100 Q70 105 60 95 Q55 85 70 75" fill="#8B0000" opacity="0.8"></path>
+                            <!-- Ruines gothiques -->
+                            <rect x="20" y="80" width="40" height="25" fill="#696969"></rect>
+                            <polygon points="25,80 35,65 45,80" fill="#2F4F4F"></polygon>
+                            <rect x="30" y="85" width="6" height="12" fill="#000" opacity="0.5"></rect>
+                            <rect x="40" y="88" width="4" height="9" fill="#000" opacity="0.5"></rect>
+                            <!-- Végétation sauvage -->
+                            <ellipse cx="130" cy="95" rx="15" ry="20" fill="#228B22" opacity="0.7"></ellipse>
+                            <ellipse cx="150" cy="100" rx="12" ry="15" fill="#32CD32" opacity="0.6"></ellipse>
+                            <ellipse cx="110" cy="105" rx="10" ry="12" fill="#006400" opacity="0.8"></ellipse>
+                            <!-- Lune romantique -->
+                            <circle cx="250" cy="35" r="12" fill="#F0E68C" opacity="0.9"></circle>
+                            <circle cx="248" cy="33" r="2" fill="#DAA520" opacity="0.5"></circle>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Thèmes :</strong> Nature sauvage, orientalisme, histoire médiévale, passions humaines.
+                            <br><br>
+                            <strong>Techniques :</strong> Couleurs vives, touches libres, compositions mouvementées.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Delacroix (La Liberté guidant le peuple), Géricault (Le Radeau de la Méduse), Caspar David Friedrich
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item realism">
+                <div class="timeline-dot" style="border-color: #8B4513;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge realism-badge">Réalisme</span>
+                    <div class="art-date">🚂 1850 - 1880</div>
+                    <div class="art-title">Vérité du Quotidien</div>
+                    <div class="art-description">
+                        Représentation fidèle de la réalité sociale, sans idéalisation ni romantisation.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="realismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#A0522D;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#realismGrad)"></rect>
+                            <!-- Scène de travail aux champs -->
+                            <rect x="0" y="80" width="300" height="40" fill="#DEB887"></rect>
+                            <!-- Paysans au travail -->
+                            <ellipse cx="60" cy="70" rx="8" ry="12" fill="#8B4513"></ellipse>
+                            <circle cx="60" cy="60" r="4" fill="#FDBCB4"></circle>
+                            <rect x="55" y="75" width="10" height="15" fill="#654321"></rect>
+                            <rect x="52" y="90" width="6" height="8" fill="#2F1B14"></rect>
+                            <rect x="62" y="90" width="6" height="8" fill="#2F1B14"></rect>
+                            <!-- Outil agricole -->
+                            <rect x="45" y="55" width="2" height="20" fill="#8B4513" transform="rotate(-30 46 65)"></rect>
+                            <rect x="40" y="50" width="8" height="3" fill="#696969" transform="rotate(-30 44 51)"></rect>
+                            <!-- Deuxième paysan -->
+                            <ellipse cx="120" cy="75" rx="8" ry="12" fill="#654321"></ellipse>
+                            <circle cx="120" cy="65" r="4" fill="#FDBCB4"></circle>
+                            <rect x="115" y="80" width="10" height="15" fill="#8B4513"></rect>
+                            <!-- Panier de récolte -->
+                            <ellipse cx="140" cy="85" rx="12" ry="8" fill="#D2691E"></ellipse>
+                            <rect x="135" y="80" width="10" height="8" fill="#8B4513"></rect>
+                            <!-- Légumes dans le panier -->
+                            <circle cx="138" cy="82" r="2" fill="#FF6347"></circle>
+                            <circle cx="142" cy="83" r="2" fill="#32CD32"></circle>
+                            <ellipse cx="140" cy="85" rx="3" ry="2" fill="#FFD700"></ellipse>
+                            <!-- Usine en arrière-plan -->
+                            <rect x="200" y="40" width="60" height="40" fill="#696969"></rect>
+                            <rect x="210" y="30" width="8" height="50" fill="#2F4F4F"></rect>
+                            <rect x="230" y="25" width="8" height="55" fill="#2F4F4F"></rect>
+                            <rect x="250" y="35" width="8" height="45" fill="#2F4F4F"></rect>
+                            <!-- Fumée des cheminées -->
+                            <ellipse cx="214" cy="20" rx="3" ry="8" fill="#D3D3D3" opacity="0.7"></ellipse>
+                            <ellipse cx="234" cy="15" rx="4" ry="10" fill="#D3D3D3" opacity="0.6"></ellipse>
+                            <ellipse cx="254" cy="25" rx="3" ry="7" fill="#D3D3D3" opacity="0.8"></ellipse>
+                            <!-- Fenêtres d'usine -->
+                            <rect x="205" y="45" width="4" height="6" fill="#FFD700" opacity="0.8"></rect>
+                            <rect x="215" y="50" width="4" height="6" fill="#FFD700" opacity="0.8"></rect>
+                            <rect x="225" y="47" width="4" height="6" fill="#FFD700" opacity="0.8"></rect>
+                            <!-- Chemin de terre -->
+                            <ellipse cx="150" cy="95" rx="80" ry="8" fill="#CD853F"></ellipse>
+                            <!-- Maison modeste -->
+                            <rect x="20" y="60" width="30" height="25" fill="#DEB887"></rect>
+                            <polygon points="20,60 35,45 50,60" fill="#8B4513"></polygon>
+                            <rect x="25" y="70" width="6" height="10" fill="#654321"></rect>
+                            <rect x="35" y="65" width="4" height="4" fill="#4169E1" opacity="0.6"></rect>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Principes :</strong> "Il faut être de son temps", peindre ce qu'on voit, sujets contemporains et sociaux.
+                            <br><br>
+                            <strong>Thèmes :</strong> Monde ouvrier, paysans, scènes de rue, industrialisation naissante.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Gustave Courbet (L'Enterrement à Ornans), Jean-François Millet (L'Angélus), Honoré Daumier
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item impressionist">
+                <div class="timeline-dot" style="border-color: #FFD700;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge impressionist-badge">Impressionnisme</span>
+                    <div class="art-date">🌅 1860 - 1900</div>
+                    <div class="art-title">Lumière et Instantané</div>
+                    <div class="art-description">
+                        Capture des effets de lumière, peinture en plein air et représentation de l'instant.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="impressionistGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1"></stop>
+                                </linearGradient>
+                                <radialGradient id="sunEffect" cx="80%" cy="20%" r="60%">
+                                    <stop offset="0%" style="stop-color:#FFFF00;stop-opacity:0.8"></stop>
+                                    <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0.3"></stop>
+                                </radialGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#impressionistGrad)"></rect>
+                            <!-- Effet de soleil -->
+                            <ellipse cx="240" cy="25" rx="40" ry="30" fill="url(#sunEffect)"></ellipse>
+                            <!-- Nénuphars de Monet -->
+                            <ellipse cx="150" cy="90" rx="100" ry="25" fill="#4682B4" opacity="0.7"></ellipse>
+                            <!-- Nénuphars flottants -->
+                            <ellipse cx="120" cy="85" rx="12" ry="8" fill="#228B22" opacity="0.8"></ellipse>
+                            <circle cx="120" cy="85" r="4" fill="#FFB6C1"></circle>
+                            <ellipse cx="160" cy="90" rx="10" ry="6" fill="#32CD32" opacity="0.7"></ellipse>
+                            <circle cx="160" cy="90" r="3" fill="#FFF"></circle>
+                            <ellipse cx="180" cy="88" rx="14" ry="9" fill="#006400" opacity="0.8"></ellipse>
+                            <circle cx="180" cy="88" r="5" fill="#FF69B4"></circle>
+                            <!-- Reflets dans l'eau -->
+                            <ellipse cx="240" cy="95" rx="15" ry="8" fill="#FFFF00" opacity="0.5"></ellipse>
+                            <ellipse cx="250" cy="100" rx="10" ry="5" fill="#FFD700" opacity="0.4"></ellipse>
+                            <ellipse cx="230" cy="105" rx="8" ry="4" fill="#FFA500" opacity="0.6"></ellipse>
+                            <!-- Touches de pinceau impressionnistes -->
+                            <rect x="50" y="30" width="3" height="8" fill="#87CEEB" opacity="0.7" transform="rotate(15 51 34)"></rect>
+                            <rect x="60" y="25" width="3" height="10" fill="#98FB98" opacity="0.6" transform="rotate(-20 61 30)"></rect>
+                            <rect x="70" y="35" width="4" height="6" fill="#F0E68C" opacity="0.8" transform="rotate(45 72 38)"></rect>
+                            <rect x="80" y="28" width="3" height="9" fill="#DDA0DD" opacity="0.7" transform="rotate(-10 81 32)"></rect>
+                            <rect x="90" y="40" width="4" height="7" fill="#FFE4B5" opacity="0.6" transform="rotate(30 92 43)"></rect>
+                            <!-- Arbres impressionnistes -->
+                            <ellipse cx="40" cy="50" rx="8" ry="25" fill="#228B22" opacity="0.6"></ellipse>
+                            <ellipse cx="35" cy="45" rx="6" ry="20" fill="#32CD32" opacity="0.5"></ellipse>
+                            <ellipse cx="45" cy="48" rx="7" ry="22" fill="#90EE90" opacity="0.7"></ellipse>
+                            <rect x="38" y="70" width="4" height="15" fill="#8B4513"></rect>
+                            <!-- Personnages en plein air -->
+                            <ellipse cx="200" cy="70" rx="6" ry="10" fill="#FF69B4"></ellipse>
+                            <circle cx="200" cy="60" r="3" fill="#FDBCB4"></circle>
+                            <ellipse cx="210" cy="72" rx="5" ry="8" fill="#4169E1"></ellipse>
+                            <circle cx="210" cy="64" r="3" fill="#FDBCB4"></circle>
+                            <!-- Ombrelle -->
+                            <ellipse cx="195" cy="50" rx="12" ry="4" fill="#FFF" opacity="0.8"></ellipse>
+                            <rect x="194" y="50" width="2" height="15" fill="#8B4513"></rect>
+                            <!-- Touches de couleur pure -->
+                            <circle cx="100" cy="60" r="2" fill="#FF0000" opacity="0.8"></circle>
+                            <circle cx="110" cy="55" r="2" fill="#00FF00" opacity="0.7"></circle>
+                            <circle cx="120" cy="65" r="2" fill="#0000FF" opacity="0.8"></circle>
+                            <circle cx="130" cy="58" r="2" fill="#FFFF00" opacity="0.9"></circle>
+                            <circle cx="140" cy="62" r="2" fill="#FF00FF" opacity="0.7"></circle>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Révolution :</strong> Abandon du dessin au profit de la couleur, touches visibles, sujets du quotidien.
+                            <br><br>
+                            <strong>Innovation :</strong> Peinture directe devant le motif, étude des reflets et des ombres colorées.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Monet (Nymphéas), Renoir (Le Déjeuner des canotiers), Degas (Danseuses)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item cubism">
+                <div class="timeline-dot" style="border-color: #32CD32;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge cubism-badge">Cubisme</span>
+                    <div class="art-date">🔲 1907 - 1920</div>
+                    <div class="art-title">Géométrie et Perspectives Multiples</div>
+                    <div class="art-description">
+                        Révolution de la représentation : décomposition géométrique et vision simultanée de tous les angles.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="cubistGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#32CD32;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#90EE90;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#cubistGrad)"></rect>
+                            <!-- Visage cubiste fragmenté -->
+                            <polygon points="80,30 100,20 120,35 110,50 90,55 70,45" fill="#FDBCB4" opacity="0.8"></polygon>
+                            <polygon points="100,20 120,35 130,25 115,15" fill="#F4A460" opacity="0.7"></polygon>
+                            <polygon points="110,50 90,55 95,70 115,65" fill="#DEB887" opacity="0.6"></polygon>
+                            <!-- Œil fragmenté -->
+                            <polygon points="85,35 95,30 100,40 90,45" fill="#FFF"></polygon>
+                            <circle cx="92" cy="37" r="3" fill="#000"></circle>
+                            <!-- Nez géométrique -->
+                            <polygon points="95,45 105,40 100,55" fill="#CD853F"></polygon>
+                            <!-- Guitare cubiste -->
+                            <polygon points="180,40 220,35 230,60 210,80 170,75 160,55" fill="#8B4513" opacity="0.8"></polygon>
+                            <polygon points="220,35 230,60 240,50 235,30" fill="#A0522D" opacity="0.7"></polygon>
+                            <ellipse cx="195" cy="60" rx="15" ry="10" fill="#654321"></ellipse>
+                            <line x1="185" y1="50" x2="205" y2="70" stroke="#2F1B14" stroke-width="2"></line>
+                            <line x1="190" y1="45" x2="210" y2="65" stroke="#2F1B14" stroke-width="2"></line>
+                            <!-- Formes géométriques -->
+                            <rect x="250" y="30" width="30" height="25" fill="#FF6347" opacity="0.6" transform="rotate(15 265 42)"></rect>
+                            <circle cx="270" cy="70" r="15" fill="#4169E1" opacity="0.5"></circle>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Innovation :</strong> Rupture avec la perspective traditionnelle, fragmentation des formes, collages et papiers collés.
+                            <br><br>
+                            <strong>Phases :</strong> Cubisme cézannien, analytique puis synthétique. Influence de l'art africain.
+                            <div class="artwork-example">
+                                <strong>Pionniers :</strong> Pablo Picasso (Les Demoiselles d'Avignon), Georges Braque (Violon et Chandelier)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item abstract">
+                <div class="timeline-dot" style="border-color: #FF4500;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge abstract-badge">Art Abstrait</span>
+                    <div class="art-date">🌀 1910 - 1950</div>
+                    <div class="art-title">Libération de la Forme</div>
+                    <div class="art-description">
+                        Abandon total de la représentation figurative au profit de l'expression pure des couleurs et formes.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="abstractGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#abstractGrad)"></rect>
+                            <!-- Composition abstraite à la Kandinsky -->
+                            <circle cx="60" cy="40" r="25" fill="#FFD700" opacity="0.8"></circle>
+                            <circle cx="60" cy="40" r="15" fill="#FF1493" opacity="0.6"></circle>
+                            <circle cx="60" cy="40" r="8" fill="#00BFFF" opacity="0.9"></circle>
+                            <!-- Lignes dynamiques -->
+                            <line x1="20" y1="80" x2="120" y2="20" stroke="#000" stroke-width="4"></line>
+                            <line x1="30" y1="100" x2="100" y2="30" stroke="#FF0000" stroke-width="3"></line>
+                            <line x1="10" y1="60" x2="110" y2="60" stroke="#0000FF" stroke-width="2"></line>
+                            <!-- Formes géométriques -->
+                            <rect x="150" y="30" width="40" height="60" fill="#32CD32" opacity="0.7" transform="rotate(20 170 60)"></rect>
+                            <polygon points="220,20 250,40 240,80 200,70" fill="#9932CC" opacity="0.8"></polygon>
+                            <!-- Taches de couleur -->
+                            <ellipse cx="180" cy="80" rx="20" ry="10" fill="#FF69B4" opacity="0.6"></ellipse>
+                            <circle cx="260" cy="50" r="18" fill="#00FF7F" opacity="0.7"></circle>
+                            <!-- Lignes expressives -->
+                            <path d="M200 100 Q220 80 240 90 Q260 70 280 85" stroke="#8B0000" stroke-width="3" fill="none"></path>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Courants :</strong> Abstraction lyrique (Kandinsky), géométrique (Mondrian), expressionnisme abstrait américain.
+                            <br><br>
+                            <strong>Philosophie :</strong> L'art comme langage universel, spiritualité de la couleur et de la forme pure.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Wassily Kandinsky, Piet Mondrian, Jackson Pollock (dripping), Mark Rothko
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item surrealism">
+                <div class="timeline-dot" style="border-color: #FF69B4;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge surrealism-badge">Surréalisme</span>
+                    <div class="art-date">🌙 1920 - 1950</div>
+                    <div class="art-title">Exploration de l'Inconscient</div>
+                    <div class="art-description">
+                        Art de l'irrationnel et du rêve, libération de l'imagination et de l'automatisme créatif.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="surrealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FF69B4;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FFB6C1;stop-opacity:1"></stop>
+                                </linearGradient>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#surrealGrad)"></rect>
+                            <!-- Paysage onirique -->
+                            <ellipse cx="150" cy="100" rx="150" ry="20" fill="#DEB887"></ellipse>
+                            <!-- Montres molles de Dalí -->
+                            <ellipse cx="80" cy="70" rx="25" ry="8" fill="#FFD700"></ellipse>
+                            <path d="M55 70 Q80 85 105 70" fill="#FFD700"></path>
+                            <circle cx="80" cy="70" r="3" fill="#000"></circle>
+                            <line x1="80" y1="70" x2="90" y2="65" stroke="#000" stroke-width="1"></line>
+                            <line x1="80" y1="70" x2="85" y2="75" stroke="#000" stroke-width="1"></line>
+                            <!-- Arbre surréaliste -->
+                            <rect x="180" y="60" width="8" height="40" fill="#8B4513"></rect>
+                            <ellipse cx="184" cy="50" rx="15" ry="20" fill="#32CD32"></ellipse>
+                            <!-- Œil géant -->
+                            <ellipse cx="220" cy="40" rx="20" ry="15" fill="#FFF"></ellipse>
+                            <circle cx="220" cy="40" r="8" fill="#4169E1"></circle>
+                            <circle cx="220" cy="40" r="4" fill="#000"></circle>
+                            <!-- Nuages étranges -->
+                            <ellipse cx="50" cy="25" rx="15" ry="8" fill="#F0F8FF" opacity="0.8"></ellipse>
+                            <ellipse cx="250" cy="30" rx="20" ry="10" fill="#F0F8FF" opacity="0.8"></ellipse>
+                            <!-- Escalier impossible -->
+                            <polygon points="120,90 140,80 140,85 125,95 120,95" fill="#A9A9A9"></polygon>
+                            <polygon points="140,80 160,70 160,75 145,85 140,85" fill="#808080"></polygon>
+                            <polygon points="160,70 180,60 180,65 165,75 160,75" fill="#696969"></polygon>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Méthodes :</strong> Écriture automatique, cadavre exquis, paranoïa-critique de Dalí, frottage d'Ernst.
+                            <br><br>
+                            <strong>Influence :</strong> Psychanalyse de Freud, marxisme, contestation de la logique bourgeoise.
+                            <div class="artwork-example">
+                                <strong>Maîtres :</strong> Salvador Dalí (Persistance de la mémoire), René Magritte, Max Ernst, Joan Miró
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item pop-art">
+                <div class="timeline-dot" style="border-color: #FF0000;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge pop-art-badge">Pop Art</span>
+                    <div class="art-date">🛍️ 1950 - 1970</div>
+                    <div class="art-title">Culture de Masse et Consommation</div>
+                    <div class="art-description">
+                        Art populaire inspiré de la publicité, des médias et des objets du quotidien américain.
+                    </div>
+                    <div class="art-illustration">
+                        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="popGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FF0000;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#FF4500;stop-opacity:1"></stop>
+                                </linearGradient>
+                                <pattern id="dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                                    <circle cx="4" cy="4" r="2" fill="#FF1493"></circle>
+                                </pattern>
+                            </defs>
+                            <rect width="300" height="120" fill="url(#popGrad)"></rect>
+                            <!-- Boîte de soupe Campbell's style Warhol -->
+                            <rect x="30" y="30" width="50" height="70" fill="#FFF"></rect>
+                            <rect x="35" y="35" width="40" height="15" fill="#FF0000"></rect>
+                            <text x="55" y="45" font-family="Arial" font-size="8" fill="#FFF" text-anchor="middle">SOUP</text>
+                            <circle cx="55" cy="65" r="15" fill="#FFD700"></circle>
+                            <text x="55" y="85" font-family="Arial" font-size="6" fill="#000" text-anchor="middle">Campbell's</text>
+                            <!-- Style BD Lichtenstein -->
+                            <rect x="120" y="20" width="80" height="80" fill="url(#dots)"></rect>
+                            <ellipse cx="160" cy="45" rx="20" ry="15" fill="#FFFF00"></ellipse>
+                            <circle cx="155" cy="40" r="3" fill="#000"></circle>
+                            <circle cx="165" cy="40" r="3" fill="#000"></circle>
+                            <path d="M150 55 Q160 65 170 55" stroke="#000" stroke-width="2" fill="none"></path>
+                            <!-- Bulle de BD -->
+                            <ellipse cx="180" cy="35" rx="15" ry="8" fill="#FFF" stroke="#000" stroke-width="1"></ellipse>
+                            <text x="180" y="38" font-family="Arial" font-size="6" fill="#000" text-anchor="middle">WOW!</text>
+                            <!-- Marilyn Monroe stylisée -->
+                            <rect x="230" y="25" width="50" height="70" fill="#FF69B4"></rect>
+                            <ellipse cx="255" cy="50" rx="15" ry="20" fill="#FDBCB4"></ellipse>
+                            <circle cx="250" cy="45" r="2" fill="#000"></circle>
+                            <circle cx="260" cy="45" r="2" fill="#000"></circle>
+                            <ellipse cx="255" cy="55" rx="8" ry="3" fill="#FF0000"></ellipse>
+                            <path d="M245 40 Q255 35 265 40" stroke="#FFD700" stroke-width="3" fill="none"></path>
+                        </svg>
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Techniques :</strong> Sérigraphie, répétition, couleurs vives, détournement d'images publicitaires.
+                            <br><br>
+                            <strong>Thèmes :</strong> Célébrités, produits de consommation, bandes dessinées, critique de la société capitaliste.
+                            <div class="artwork-example">
+                                <strong>Icônes :</strong> Andy Warhol (Marilyn Monroe), Roy Lichtenstein (BD), Keith Haring, Basquiat
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item contemporary">
+                <div class="timeline-dot" style="border-color: #00CED1;"></div>
+                <div class="timeline-content">
+                    <span class="period-badge contemporary-badge">Art Contemporain</span>
+                    <div class="art-date">🚀 1960 - Aujourd'hui</div>
+                    <div class="art-title">Diversité et Nouvelles Technologies</div>
+                    <div class="art-description">
+                        Multiplication des supports, art numérique, installations et questionnements sociétaux.
+                    </div>
+                    <button class="expand-btn" onclick="toggleDetails(this)">Découvrir ▼</button>
+                    <div class="detailed-info">
+                        <div class="detailed-content">
+                            <strong>Caractéristiques :</strong> Pluralité des médiums, art vidéo, performances, street art, art numérique.
+                            <br><br>
+                            <strong>Enjeux :</strong> Mondialisation, écologie, identité, nouvelles technologies, réseaux sociaux.
+                            <div class="artwork-example">
+                                <strong>Artistes :</strong> Banksy, Jeff Koons, Ai Weiwei, Yves Klein, Sophie Calle, Olafur Eliasson
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up pour agrandir les illustrations -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup()">×</button>
+            <div class="popup-title" id="popupTitle"></div>
+            <div class="popup-image" id="popupImage"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails(button) {
+            const detailedInfo = button.nextElementSibling;
+            const isExpanded = detailedInfo.classList.contains('expanded');
+            
+            if (isExpanded) {
+                detailedInfo.classList.remove('expanded');
+                button.innerHTML = 'Découvrir ▼';
+            } else {
+                detailedInfo.classList.add('expanded');
+                button.innerHTML = 'Réduire ▲';
+            }
+        }
+
+        // Fonctions pour le pop-up des illustrations
+        function openPopup(illustration, title) {
+            const popup = document.getElementById('popupOverlay');
+            const popupImage = document.getElementById('popupImage');
+            const popupTitle = document.getElementById('popupTitle');
+            
+            // Cloner l'illustration SVG
+            const clonedSVG = illustration.cloneNode(true);
+            clonedSVG.style.width = '100%';
+            clonedSVG.style.height = 'auto';
+            clonedSVG.style.maxHeight = '500px';
+            
+            popupImage.innerHTML = '';
+            popupImage.appendChild(clonedSVG);
+            popupTitle.textContent = title;
+            
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Empêche le scroll
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popupOverlay');
+            popup.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Réactive le scroll
+        }
+
+        // Fermer le pop-up en cliquant sur l'overlay
+        document.getElementById('popupOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+
+        // Fermer le pop-up avec la touche Échap
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+
+        // Animation d'apparition progressive
+        window.addEventListener('load', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.animationDelay = `${index * 0.15}s`;
+                }, 100);
+            });
+
+            // Ajouter les événements de clic sur les illustrations
+            document.querySelectorAll('.art-illustration svg').forEach(svg => {
+                svg.addEventListener('click', function() {
+                    const timelineItem = this.closest('.timeline-item');
+                    const title = timelineItem.querySelector('.art-title').textContent;
+                    openPopup(this, title);
+                });
+            });
+        });
+
+        // Effets interactifs sur les éléments de la chronologie
+        document.querySelectorAll('.timeline-content').forEach(content => {
+            content.addEventListener('mouseenter', function() {
+                const dot = this.parentElement.querySelector('.timeline-dot');
+                dot.style.transform = 'translateX(-50%) scale(1.4)';
+                dot.style.boxShadow = '0 0 25px rgba(0,0,0,0.3)';
+            });
+            
+            content.addEventListener('mouseleave', function() {
+                const dot = this.parentElement.querySelector('.timeline-dot');
+                dot.style.transform = 'translateX(-50%) scale(1)';
+                dot.style.boxShadow = 'none';
+            });
+        });
+
+        // Animation de la ligne de temps au scroll
+        window.addEventListener('scroll', function() {
+            const timelineLine = document.querySelector('.timeline-line');
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            timelineLine.style.backgroundPosition = `0 ${rate}px`;
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a46e6a564fadb5',t:'MTc1OTc0NjA4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
